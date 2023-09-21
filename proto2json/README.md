@@ -26,7 +26,7 @@ Request example:
 {"id":"2107f934-ac08-4fa8-8b09-e8bce4701df6","days":1,"add_id":"0fcf7143-292c-4992-9f31-6e2d2384166d"}
 
 gRPCurl call example:
-grpcurl -d '{"id":"2107f934-ac08-4fa8-8b09-e8bce4701df6","days":1,"add_id":"0fcf7143-292c-4992-9f31-6e2d2384166d"}' -plaintext HOST:PORT TokensService/Generate
+grpcurl -d '{"id":"2107f934-ac08-4fa8-8b09-e8bce4701df6","days":1,"add_id":"0fcf7143-292c-4992-9f31-6e2d2384166d"}' -plaintext HOST:PORT MyService/Add
 
 Response example:
 {"blah":"9b16e97d-5e28-4c10-bc2c-19fe04060d42","expires":"2023-09-21T21:08:46.082502+02:00","id":"998c53cb-7f62-48b3-9f4a-c69004fd75aa"}
