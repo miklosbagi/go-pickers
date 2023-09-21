@@ -4,23 +4,58 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
+	"gopkg.in/yaml.v2"
 )
 
-func generateExampleValue(fieldType string) string {
+type FieldOverrideConfig struct {
+	Service string            `yaml:"service"`
+	Method  string            `yaml:"method"`
+	Fields  map[string]string `yaml:"fields"`
+}
+
+var configs []FieldOverrideConfig
+
+func readConfigs() {
+	data, err := ioutil.ReadFile("overrides.yaml")
+	if err != nil {
+		log.Fatalf("Error reading YAML file: %s\n", err)
+	}
+
+	var configWrapper struct {
+		Overrides []FieldOverrideConfig `yaml:"overrides"`
+	}
+	if err := yaml.Unmarshal(data, &configWrapper); err != nil {
+		log.Fatalf("Error parsing YAML file: %s\n", err)
+	}
+
+	configs = configWrapper.Overrides
+}
+
+// Function to generate example value based on field type
+func generateExampleValue(field *desc.FieldDescriptor) interface{} {
+	fieldType := field.GetType().String()
+	if field.GetMessageType() != nil && field.GetMessageType().GetFullyQualifiedName() == "google.protobuf.Timestamp" {
+		// Generating a human-readable datetime string
+		return time.Now().Format(time.RFC3339Nano)
+	}
 	switch fieldType {
 	case "TYPE_DOUBLE":
-		return "1.7976931348623157E+308"
+		return 1.7976931348623157e+308
 	case "TYPE_FLOAT":
-		return "3.402823466E+38"
+		return float32(3.402823466e+38)
 	case "TYPE_INT64":
-		return "9223372036854775807"
+		return int64(9223372036854775807)
 	case "TYPE_UINT64":
 		return "18446744073709551615"
 	case "TYPE_INT32":
@@ -46,14 +81,74 @@ func generateExampleValue(fieldType string) string {
 	}
 }
 
-func customValueGenerator(fieldName string) (string, bool) {
-	if matched, _ := regexp.MatchString("[a-z]+_id$", fieldName); matched {
-		return uuid.New().String(), true
+func customValueGenerator(service, method, fieldName string) (interface{}, bool) {
+	// Check for universal rules first
+	for _, config := range configs {
+		if config.Service == "*" && config.Method == "*" {
+			for key, customValue := range config.Fields {
+				matched, _ := regexp.MatchString(key, fieldName)
+				if matched {
+					if customValue == "uuid" {
+						return uuid.New().String(), true
+					} else {
+						// Try to detect if the custom value is an integer
+						if intValue, err := strconv.Atoi(customValue); err == nil {
+							return intValue, true
+						}
+						// Add more type detections here if needed
+						return customValue, true
+					}
+				}
+			}
+		}
 	}
-	return "", false
+
+	// Then check for service/method specific rules
+	for _, config := range configs {
+		if config.Service == service && config.Method == method {
+			for key, customValue := range config.Fields {
+				matched, _ := regexp.MatchString(key, fieldName)
+				if matched {
+					if customValue == "uuid" {
+						return uuid.New().String(), true
+					} else {
+						// Try to detect if the custom value is an integer
+						if intValue, err := strconv.Atoi(customValue); err == nil {
+							return intValue, true
+						}
+						// Add more type detections here if needed
+						return customValue, true
+					}
+				}
+			}
+		}
+	}
+
+	return nil, false
+}
+func generateFields(service, method string, fields []*desc.FieldDescriptor, debug bool) map[string]interface{} {
+	example := make(map[string]interface{})
+	for fIdx, field := range fields {
+		exampleValue := generateExampleValue(field)
+		if debug {
+			fmt.Printf("Field %d: %s (%s): %v\n", fIdx+1, field.GetName(), field.GetType().String(), exampleValue)
+		}
+
+		// Use customValueGenerator for specific overrides
+		if customValue, ok := customValueGenerator(service, method, field.GetName()); ok {
+			exampleValue = customValue
+			if debug {
+				fmt.Printf("Field %d: %s (%s): %v (custom)\n", fIdx+1, field.GetName(), field.GetType().String(), customValue)
+			}
+		}
+
+		example[field.GetName()] = exampleValue
+	}
+	return example
 }
 
 func main() {
+	readConfigs()
 	var protoFilePath string
 	var debug bool
 
@@ -104,10 +199,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	requestExample := make(map[string]interface{})
-	responseExample := make(map[string]interface{})
 	found := false
-
 	for _, fd := range fds {
 		for _, sd := range fd.GetServices() {
 			if sd.GetName() == service {
@@ -115,35 +207,34 @@ func main() {
 					if md.GetName() == method {
 						found = true
 
-						for fIdx, field := range md.GetInputType().GetFields() {
-							var exampleValue interface{}
-							if stringValue, ok := customValueGenerator(field.GetName()); ok {
-								exampleValue = stringValue
-							} else {
-								exampleValue = generateExampleValue(field.GetType().String())
-							}
+						if debug {
+							fmt.Println("Generating request fields:")
+						}
+						requestExample := generateFields(service, method, md.GetInputType().GetFields(), debug)
 
-							if debug {
-								fmt.Printf("Request Field %d: %s (%s): %v\n", fIdx+1, field.GetName(), field.GetType().String(), exampleValue)
-							}
+						if debug {
+							fmt.Println("Generating response fields:")
+						}
+						responseExample := generateFields(service, method, md.GetOutputType().GetFields(), debug)
 
-							requestExample[field.GetName()] = exampleValue
+						requestJSON, err := json.Marshal(requestExample)
+						if err != nil {
+							fmt.Println("Failed to generate request JSON:", err)
+							os.Exit(1)
 						}
 
-						for fIdx, field := range md.GetOutputType().GetFields() {
-							var exampleValue interface{}
-							if stringValue, ok := customValueGenerator(field.GetName()); ok {
-								exampleValue = stringValue
-							} else {
-								exampleValue = generateExampleValue(field.GetType().String())
-							}
-
-							if debug {
-								fmt.Printf("Response Field %d: %s (%s): %v\n", fIdx+1, field.GetName(), field.GetType().String(), exampleValue)
-							}
-
-							responseExample[field.GetName()] = exampleValue
+						responseJSON, err := json.Marshal(responseExample)
+						if err != nil {
+							fmt.Println("Failed to generate response JSON:", err)
+							os.Exit(1)
 						}
+
+						fmt.Println("Request example:")
+						fmt.Println(string(requestJSON))
+						fmt.Println("gRPCurl call example:")
+						fmt.Printf("grpcurl -d '%s' -plaintext HOST:PORT %s/%s\n", string(requestJSON), service, method)
+						fmt.Println("Response example:")
+						fmt.Println(string(responseJSON))
 					}
 				}
 			}
@@ -154,23 +245,4 @@ func main() {
 		fmt.Println("FAIL: Service or Method does not exist.")
 		os.Exit(1)
 	}
-
-	requestJSON, err := json.Marshal(requestExample)
-	if err != nil {
-		fmt.Println("Failed to generate request JSON:", err)
-		os.Exit(1)
-	}
-
-	responseJSON, err := json.Marshal(responseExample)
-	if err != nil {
-		fmt.Println("Failed to generate response JSON:", err)
-		os.Exit(1)
-	}
-
-	fmt.Println("Request example:")
-	fmt.Println(string(requestJSON))
-	fmt.Println("gRPCurl call example:")
-	fmt.Printf("grpcurl -d '%s' -plaintext HOST:PORT %s/%s\n", string(requestJSON), service, method)
-	fmt.Println("Response example:")
-	fmt.Println(string(responseJSON))
 }

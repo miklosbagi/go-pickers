@@ -1,0 +1,12 @@
+overrides:
+  # overriding this field for all services and methods
+  - service: "*"
+    method: "*"
+    fields:
+      ".*_id": "uuid"  # This will match any field ending with "_id"
+      id: uuid
+      expire_days: 1
+  - service: TokensService
+    method: Generate
+    fields:
+      code: uuid
