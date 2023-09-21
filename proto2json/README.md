@@ -7,6 +7,31 @@ go mod tidy; go run main.go --proto <path-to-proto-file>
 ```
 There is a `--debug` optional flag to spit out more info in case something go sideways.
 
+### Example run
+```
+go mod tidy; go build; ./proto2json --proto ~/Documents/test.proto
+1. Service: MyService
+      1/1. MyService/List
+      1/2. MyService/Add
+      1/3. MyService/Remove
+2. Service: YourService
+      2/1. YourService/List
+      2/2. YourService/Add
+      2/3. YourService/Remove
+
+Select a method to generate examples for (e.g., 1/1 or Service/Method):
+1/2
+
+Request example:
+{"id":"2107f934-ac08-4fa8-8b09-e8bce4701df6","days":1,"add_id":"0fcf7143-292c-4992-9f31-6e2d2384166d"}
+
+gRPCurl call example:
+grpcurl -d '{"id":"2107f934-ac08-4fa8-8b09-e8bce4701df6","days":1,"add_id":"0fcf7143-292c-4992-9f31-6e2d2384166d"}' -plaintext HOST:PORT TokensService/Generate
+
+Response example:
+{"blah":"9b16e97d-5e28-4c10-bc2c-19fe04060d42","expires":"2023-09-21T21:08:46.082502+02:00","id":"998c53cb-7f62-48b3-9f4a-c69004fd75aa"}
+```
+
 ### Configuration
 Proto files can define a few types of fields, therefore proto2json uses detaults so avoid having to set some value to everything. These defaults are:
 - DOUBLE: 1.7976931348623157e+308
