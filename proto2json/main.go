@@ -42,14 +42,33 @@ func readConfigs() {
 	configs = configWrapper.Overrides
 }
 
-// Function to generate example value based on field type
 func generateExampleValue(field *desc.FieldDescriptor) interface{} {
-	fieldType := field.GetType().String()
-	if field.GetMessageType() != nil && field.GetMessageType().GetFullyQualifiedName() == "google.protobuf.Timestamp" {
-		// Generating a human-readable datetime string
-		return time.Now().Format(time.RFC3339Nano)
+	if field.IsRepeated() {
+		// Handle repeated fields by generating a list of example values
+		return []interface{}{generateSingleFieldValue(field)}
+	} else {
+		return generateSingleFieldValue(field)
 	}
-	switch fieldType {
+}
+
+func generateSingleFieldValue(field *desc.FieldDescriptor) interface{} {
+	if field.GetMessageType() != nil {
+		// For google.protobuf.Timestamp special handling
+		if field.GetMessageType().GetFullyQualifiedName() == "google.protobuf.Timestamp" {
+			return time.Now().Format(time.RFC3339Nano)
+		}
+
+		// Handle nested messages
+		nestedExample := make(map[string]interface{})
+		for _, nestedField := range field.GetMessageType().GetFields() {
+			nestedValue := generateExampleValue(nestedField)
+			nestedExample[nestedField.GetName()] = nestedValue
+		}
+		return nestedExample
+	}
+
+	// Handle basic types, for example:
+	switch field.GetType().String() {
 	case "TYPE_DOUBLE":
 		return 1.7976931348623157e+308
 	case "TYPE_FLOAT":
@@ -128,17 +147,17 @@ func customValueGenerator(service, method, fieldName string) (interface{}, bool)
 }
 func generateFields(service, method string, fields []*desc.FieldDescriptor, debug bool) map[string]interface{} {
 	example := make(map[string]interface{})
-	for fIdx, field := range fields {
+	for _, field := range fields {
 		exampleValue := generateExampleValue(field)
 		if debug {
-			fmt.Printf("Field %d: %s (%s): %v\n", fIdx+1, field.GetName(), field.GetType().String(), exampleValue)
+			fmt.Printf("Field: %s (%s): %v\n", field.GetName(), field.GetType().String(), exampleValue)
 		}
 
 		// Use customValueGenerator for specific overrides
 		if customValue, ok := customValueGenerator(service, method, field.GetName()); ok {
 			exampleValue = customValue
 			if debug {
-				fmt.Printf("Field %d: %s (%s): %v (custom)\n", fIdx+1, field.GetName(), field.GetType().String(), customValue)
+				fmt.Printf("Field: %s (%s): %v (custom)\n", field.GetName(), field.GetType().String(), customValue)
 			}
 		}
 
