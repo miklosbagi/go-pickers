@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -15,32 +15,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
-	"gopkg.in/yaml.v2"
+
+	"github.com/mb/proto2json/config"
 )
 
-type FieldOverrideConfig struct {
-	Service string            `yaml:"service"`
-	Method  string            `yaml:"method"`
-	Fields  map[string]string `yaml:"fields"`
-}
-
-var configs []FieldOverrideConfig
-
-func readConfigs() {
-	data, err := ioutil.ReadFile("overrides.yaml")
-	if err != nil {
-		log.Fatalf("Error reading YAML file: %s\n", err)
-	}
-
-	var configWrapper struct {
-		Overrides []FieldOverrideConfig `yaml:"overrides"`
-	}
-	if err := yaml.Unmarshal(data, &configWrapper); err != nil {
-		log.Fatalf("Error parsing YAML file: %s\n", err)
-	}
-
-	configs = configWrapper.Overrides
-}
+var configs []config.FieldOverrideConfig
 
 func generateExampleValue(field *desc.FieldDescriptor) interface{} {
 	if field.IsRepeated() {
@@ -166,17 +145,43 @@ func generateFields(service, method string, fields []*desc.FieldDescriptor, debu
 	return example
 }
 
-func main() {
-	readConfigs()
-	var protoFilePath string
-	var debug bool
+func beautifyJSON(jsonData []byte) string {
+	var prettyJSON bytes.Buffer
+	if err := json.Indent(&prettyJSON, jsonData, "", "    "); err != nil {
+		return string(jsonData) // Return the original JSON if beautifying fails
+	}
+	return prettyJSON.String()
+}
 
+func printBlock(title, content string) {
+	fmt.Printf("%s:\n%s\n\n", title, content)
+}
+
+func main() {
+	var err error
+	// todo: allow overrides.yaml to be the default, but configurable.
+	configs, err = config.ReadConfigs("overrides.yaml")
+	if err != nil {
+		log.Fatalf("Error reading or parsing YAML file: %s\n", err)
+	}
+
+	// params
+	var protoFilePath string
 	flag.StringVar(&protoFilePath, "proto", "", "Path to the protobuf schema definition file")
+	var debug bool
 	flag.BoolVar(&debug, "debug", false, "Enable debug mode to show detailed field information")
+	var uglify bool
+	flag.BoolVar(&uglify, "uglify", false, "Uglify JSON output everywhere")
+
+	// parse params
 	flag.Parse()
 
 	if debugEnv := os.Getenv("DEBUG"); debugEnv == "true" {
 		debug = true
+	}
+
+	if uglifyEnv := os.Getenv("UGLIFY"); uglifyEnv == "true" {
+		uglify = true
 	}
 
 	parser := protoparse.Parser{}
@@ -248,12 +253,27 @@ func main() {
 							os.Exit(1)
 						}
 
-						fmt.Println("Request example:")
-						fmt.Println(string(requestJSON))
-						fmt.Println("gRPCurl call example:")
-						fmt.Printf("grpcurl -d '%s' -plaintext HOST:PORT %s/%s\n", string(requestJSON), service, method)
-						fmt.Println("Response example:")
-						fmt.Println(string(responseJSON))
+						// Optionally beautify or uglify JSON based on the flag
+						var requestOutput, responseOutput string
+						if uglify {
+							requestOutput = string(requestJSON)
+							responseOutput = string(responseJSON)
+						} else {
+							requestOutput = beautifyJSON(requestJSON)
+							responseOutput = beautifyJSON(responseJSON)
+						}
+
+						// Escape double quotes for the grpcurl command
+						escapedRequestJSON := strings.ReplaceAll(requestOutput, `"`, `\"`)
+						// Escape the opening curly brace to prevent a new line
+						escapedRequestJSON = strings.ReplaceAll(escapedRequestJSON, "{", "{\\")
+
+						// Format the grpcurl command with proper line breaks and indentation
+						grpcurlCommand := fmt.Sprintf("grpcurl -d \"'%s'\" -H \"Authorization: Bearer ${TOKEN}\" -plaintext ${HOST}:${PORT} ${API_PROTO_SERVICE_VERSION}.%s/%s", escapedRequestJSON, service, method)
+
+						printBlock("Request example", requestOutput)
+						printBlock("gRPCurl call example", grpcurlCommand)
+						printBlock("Response example", responseOutput)
 					}
 				}
 			}
