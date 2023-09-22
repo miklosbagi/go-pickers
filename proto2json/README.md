@@ -5,31 +5,125 @@ This is go code to read up a defined proto file, and attempt to put out example 
 ```
 go mod tidy; go run main.go --proto <path-to-proto-file>
 ```
-There is a `--debug` optional flag to spit out more info in case something go sideways.
+
+Params:
+- `--proto`: full / relative path to proto file
+
+Flags:
+- `--debug`: print out more info
+- `--uglify`: single line json output for all examples
 
 ### Example run
+We are using [nested proto test data](./test/test-data/nested proto) for this.
+
 ```
-go mod tidy; go build; ./proto2json --proto ~/Documents/test.proto
-1. Service: MyService
-      1/1. MyService/List
-      1/2. MyService/Add
-      1/3. MyService/Remove
-2. Service: YourService
-      2/1. YourService/List
-      2/2. YourService/Add
-      2/3. YourService/Remove
-
+go mod tidy; go build; ./proto2json --proto ./test/test-data/nested proto
+1. Service: OrderService
+      1/1. OrderService/CreateOrder
+      1/2. OrderService/GetOrderInfo
 Select a method to generate examples for (e.g., 1/1 or Service/Method):
-1/2
+```
 
+```
 Request example:
-{"id":"2107f934-ac08-4fa8-8b09-e8bce4701df6","days":1,"add_id":"0fcf7143-292c-4992-9f31-6e2d2384166d"}
+{
+    "customer_info": {
+        "address": {
+            "city": "abcdefghijklmnopqrstuvwxyzABCD",
+            "contacts": [
+                {
+                    "email": "abcdefghijklmnopqrstuvwxyzABCD",
+                    "phone": {
+                        "country_code": "abcdefghijklmnopqrstuvwxyzABCD",
+                        "number": "abcdefghijklmnopqrstuvwxyzABCD"
+                    }
+                }
+            ],
+            "postal_code": "abcdefghijklmnopqrstuvwxyzABCD",
+            "state": "abcdefghijklmnopqrstuvwxyzABCD",
+            "street": "abcdefghijklmnopqrstuvwxyzABCD"
+        },
+        "first_name": "abcdefghijklmnopqrstuvwxyzABCD",
+        "last_name": "abcdefghijklmnopqrstuvwxyzABCD"
+    },
+    "items": [
+        {
+            "item_id": "abcdefghijklmnopqrstuvwxyzABCD",
+            "name": "abcdefghijklmnopqrstuvwxyzABCD",
+            "price": 1.7976931348623157e+308,
+            "quantity": "2147483647"
+        }
+    ],
+    "order_id": "799e6325-9697-4fd9-826b-0d0341101a81"
+}
+```
 
+```
 gRPCurl call example:
-grpcurl -d '{"id":"2107f934-ac08-4fa8-8b09-e8bce4701df6","days":1,"add_id":"0fcf7143-292c-4992-9f31-6e2d2384166d"}' -plaintext HOST:PORT MyService/Add
+grpcurl -d "'{\
+    \"customer_info\": {\
+        \"address\": {\
+            \"city\": \"abcdefghijklmnopqrstuvwxyzABCD\",
+            \"contacts\": [
+                {\
+                    \"email\": \"abcdefghijklmnopqrstuvwxyzABCD\",
+                    \"phone\": {\
+                        \"country_code\": \"abcdefghijklmnopqrstuvwxyzABCD\",
+                        \"number\": \"abcdefghijklmnopqrstuvwxyzABCD\"
+                    }
+                }
+            ],
+            \"postal_code\": \"abcdefghijklmnopqrstuvwxyzABCD\",
+            \"state\": \"abcdefghijklmnopqrstuvwxyzABCD\",
+            \"street\": \"abcdefghijklmnopqrstuvwxyzABCD\"
+        },
+        \"first_name\": \"abcdefghijklmnopqrstuvwxyzABCD\",
+        \"last_name\": \"abcdefghijklmnopqrstuvwxyzABCD\"
+    },
+    \"items\": [
+        {\
+            \"item_id\": \"abcdefghijklmnopqrstuvwxyzABCD\",
+            \"name\": \"abcdefghijklmnopqrstuvwxyzABCD\",
+            \"price\": 1.7976931348623157e+308,
+            \"quantity\": \"2147483647\"
+        }
+    ],
+    \"order_id\": \"799e6325-9697-4fd9-826b-0d0341101a81\"
+}'" -H "Authorization: Bearer ${TOKEN}" -plaintext ${HOST}:${PORT} ${API_PROTO_SERVICE_VERSION}.OrderService/CreateOrder
+```
 
+```
 Response example:
-{"blah":"9b16e97d-5e28-4c10-bc2c-19fe04060d42","expires":"2023-09-21T21:08:46.082502+02:00","id":"998c53cb-7f62-48b3-9f4a-c69004fd75aa"}
+{
+    "customer_info": {
+        "address": {
+            "city": "abcdefghijklmnopqrstuvwxyzABCD",
+            "contacts": [
+                {
+                    "email": "abcdefghijklmnopqrstuvwxyzABCD",
+                    "phone": {
+                        "country_code": "abcdefghijklmnopqrstuvwxyzABCD",
+                        "number": "abcdefghijklmnopqrstuvwxyzABCD"
+                    }
+                }
+            ],
+            "postal_code": "abcdefghijklmnopqrstuvwxyzABCD",
+            "state": "abcdefghijklmnopqrstuvwxyzABCD",
+            "street": "abcdefghijklmnopqrstuvwxyzABCD"
+        },
+        "first_name": "abcdefghijklmnopqrstuvwxyzABCD",
+        "last_name": "abcdefghijklmnopqrstuvwxyzABCD"
+    },
+    "items": [
+        {
+            "item_id": "abcdefghijklmnopqrstuvwxyzABCD",
+            "name": "abcdefghijklmnopqrstuvwxyzABCD",
+            "price": 1.7976931348623157e+308,
+            "quantity": "2147483647"
+        }
+    ],
+    "order_id": "509fa97c-3c56-4ff0-a5a5-d946a13acddd"
+}
 ```
 
 ### Configuration
@@ -85,3 +179,7 @@ overrides:
 
 Code ovverides:
 - all "uuid" values are replaced by generated uuid, e.g: cc325791-84ef-4269-b492-8515e5a88520
+
+# Known issues
+- Uglify has a printout bug with `\{\\`.
+- Proto files with `import` statements are only supported only relative to run path.

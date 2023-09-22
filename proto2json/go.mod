@@ -1,4 +1,4 @@
-module github.com/miklosbagi/proto2json
+module github.com/mb/proto2json
 
 go 1.20
 
