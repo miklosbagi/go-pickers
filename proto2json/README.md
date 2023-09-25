@@ -1,5 +1,12 @@
 # proto2json
 This is go code to read up a defined proto file, and attempt to put out example JSON requests and responses. The point of this small tool is to save time on manual analysis, and have a copy-paste solution at hand for any proto you throw at this, for testing purposes.
+This provides a similar output like postman, when example data fills in a request, with the following differences:
+
+- gRPC only (no REST)
+- Examples aim to be better than the default
+- Creates exmaples for both request and response, including grpcurl call.
+- Not upselling a subscription package
+
 
 ### Usage
 ```
@@ -183,3 +190,22 @@ Code ovverides:
 # Known issues
 - Uglify has a printout bug with `\{\\`.
 - Proto files with `import` statements are only supported only relative to run path.
+- item_id not replaced with uuid.
+- `repeated type` gets only a single item (e.g: repeated string: "names" should generate {"name":"Steve","name":"George"} as example.
+
+# TODO
+- Generators
+  - Firstname
+  - Lastname
+  - Email
+  - Phone Number
+  - Country name
+  - Country code
+  - City
+  - FlagIso2Code
+  - Dates
+  - Times
+- Tests
+- Makefile, packaging, etc
+- Feature
+  - ENTER on selections secreen == All services in loop
