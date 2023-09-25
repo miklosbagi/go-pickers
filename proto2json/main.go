@@ -80,40 +80,17 @@ func generateSingleFieldValue(field *desc.FieldDescriptor) interface{} {
 }
 
 func customValueGenerator(service, method, fieldName string) (interface{}, bool) {
-	// Check for universal rules first
+	// Check for universal rules and service/method specific rules
 	for _, config := range configs {
-		if config.Service == "*" && config.Method == "*" {
+		if (config.Service == "*" && config.Method == "*") || (config.Service == service && config.Method == method) {
 			for key, customValue := range config.Fields {
 				matched, _ := regexp.MatchString(key, fieldName)
 				if matched {
-					if customValue == "uuid" {
+					if customValue == "_uuid" {
 						return uuid.New().String(), true
+					} else if intValue, err := strconv.Atoi(customValue); err == nil {
+						return intValue, true
 					} else {
-						// Try to detect if the custom value is an integer
-						if intValue, err := strconv.Atoi(customValue); err == nil {
-							return intValue, true
-						}
-						// Add more type detections here if needed
-						return customValue, true
-					}
-				}
-			}
-		}
-	}
-
-	// Then check for service/method specific rules
-	for _, config := range configs {
-		if config.Service == service && config.Method == method {
-			for key, customValue := range config.Fields {
-				matched, _ := regexp.MatchString(key, fieldName)
-				if matched {
-					if customValue == "uuid" {
-						return uuid.New().String(), true
-					} else {
-						// Try to detect if the custom value is an integer
-						if intValue, err := strconv.Atoi(customValue); err == nil {
-							return intValue, true
-						}
 						// Add more type detections here if needed
 						return customValue, true
 					}
@@ -124,6 +101,7 @@ func customValueGenerator(service, method, fieldName string) (interface{}, bool)
 
 	return nil, false
 }
+
 func generateFields(service, method string, fields []*desc.FieldDescriptor, debug bool) map[string]interface{} {
 	example := make(map[string]interface{})
 	for _, field := range fields {
