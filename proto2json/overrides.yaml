@@ -3,8 +3,11 @@ overrides:
   - service: "*"
     method: "*"
     fields:
-      ".*_id": "uuid"  # This will match any field ending with "_id"
+      "^[a-z]+_id$": "uuid"  # This will match any field ending with "_id"
       id: uuid
+      imo: imo
+      first_name: first_name
+      last_name: last_name
       expire_days: 1
   - service: TokensService
     method: Generate

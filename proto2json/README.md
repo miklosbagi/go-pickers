@@ -118,18 +118,21 @@ Response example:
             "state": "abcdefghijklmnopqrstuvwxyzABCD",
             "street": "abcdefghijklmnopqrstuvwxyzABCD"
         },
-        "first_name": "abcdefghijklmnopqrstuvwxyzABCD",
-        "last_name": "abcdefghijklmnopqrstuvwxyzABCD"
+        "first_name": "John",
+        "last_name": "Doe"
     },
+    "expire_days": 1,
+    "first_name": "Eve",
+    "imo": 9682510,
     "items": [
         {
-            "item_id": "abcdefghijklmnopqrstuvwxyzABCD",
+            "item_id": "f6943966-5c43-4ae3-b1f6-1d829a8c35dd",
             "name": "abcdefghijklmnopqrstuvwxyzABCD",
             "price": 1.7976931348623157e+308,
             "quantity": "2147483647"
         }
     ],
-    "order_id": "509fa97c-3c56-4ff0-a5a5-d946a13acddd"
+    "order_id": "563162cd-f9a5-4a93-a945-4f39412d9855"
 }
 ```
 
@@ -190,7 +193,6 @@ Code ovverides:
 # Known issues
 - Uglify has a printout bug with `\{\\`.
 - Proto files with `import` statements are only supported only relative to run path.
-- item_id not replaced with uuid.
 - `repeated type` gets only a single item (e.g: repeated string: "names" should generate {"name":"Steve","name":"George"} as example.
 
 # TODO

@@ -37,9 +37,18 @@ message Order {
     string order_id = 1;
     repeated OrderItem items = 2;
     PersonalInfo customer_info = 3;
+    int32 imo = 4;
+    int32 expire_days = 5;
+    string first_name = 6;
+}
+
+message Documents {
+    repeated string document_ids = 1;
+    int32 imo = 2;
 }
 
 service OrderService {
     rpc CreateOrder(Order) returns (Order);
     rpc GetOrderInfo(Contact) returns (PersonalInfo);
+    rpc GetDocuments(Documents) returns (Order);
 }
