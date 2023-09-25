@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"regexp"
 	"strconv"
@@ -80,14 +81,32 @@ func generateSingleFieldValue(field *desc.FieldDescriptor) interface{} {
 }
 
 func customValueGenerator(service, method, fieldName string) (interface{}, bool) {
+
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 	// Check for universal rules and service/method specific rules
 	for _, config := range configs {
 		if (config.Service == "*" && config.Method == "*") || (config.Service == service && config.Method == method) {
 			for key, customValue := range config.Fields {
 				matched, _ := regexp.MatchString(key, fieldName)
 				if matched {
-					if customValue == "_uuid" {
+					if customValue == "uuid" {
 						return uuid.New().String(), true
+					} else if customValue == "imo" {
+						// Generate a 7-digit integer starting with 9
+						min := 9000000
+						max := 9999999
+						randomInt := min + random.Intn(max-min+1)
+						return randomInt, true
+					} else if customValue == "first_name" {
+						// Generate a random first name (you can replace this with your data source)
+						firstNames := []string{"John", "Jane", "Alice", "Bob", "Eve"}
+						randomIndex := random.Intn(len(firstNames))
+						return firstNames[randomIndex], true
+					} else if customValue == "last_name" {
+						// Generate a random last name (you can replace this with your data source)
+						lastNames := []string{"Smith", "Doe", "Johnson", "Brown", "Wilson"}
+						randomIndex := random.Intn(len(lastNames))
+						return lastNames[randomIndex], true
 					} else if intValue, err := strconv.Atoi(customValue); err == nil {
 						return intValue, true
 					} else {
@@ -102,7 +121,7 @@ func customValueGenerator(service, method, fieldName string) (interface{}, bool)
 	return nil, false
 }
 
-func generateFields(service, method string, fields []*desc.FieldDescriptor, debug bool) map[string]interface{} {
+func generateFields(service, method string, fields []*desc.FieldDescriptor, debug bool) interface{} {
 	example := make(map[string]interface{})
 	for _, field := range fields {
 		exampleValue := generateExampleValue(field)
@@ -119,6 +138,28 @@ func generateFields(service, method string, fields []*desc.FieldDescriptor, debu
 		}
 
 		example[field.GetName()] = exampleValue
+
+		// Recursively apply custom value replacements to nested fields
+		if field.GetMessageType() != nil {
+			nestedFields := field.GetMessageType().GetFields()
+			nestedExample := generateFields(service, method, nestedFields, debug)
+			if _, isMap := exampleValue.(map[string]interface{}); isMap {
+				for key, value := range nestedExample.(map[string]interface{}) {
+					exampleValue.(map[string]interface{})[key] = value
+				}
+			} else if _, isSlice := exampleValue.([]interface{}); isSlice {
+				// Handle repeated fields with nested messages
+				// This assumes that if it's a slice, it's a repeated message field
+				// and expects a list of maps.
+				for _, item := range exampleValue.([]interface{}) {
+					if itemMap, isItemMap := item.(map[string]interface{}); isItemMap {
+						for key, value := range nestedExample.(map[string]interface{}) {
+							itemMap[key] = value
+						}
+					}
+				}
+			}
+		}
 	}
 	return example
 }
