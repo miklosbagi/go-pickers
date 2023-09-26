@@ -36,32 +36,32 @@ Request example:
 {
     "customer_info": {
         "address": {
-            "city": "abcdefghijklmnopqrstuvwxyzABCD",
+            "city": "Berlin",
             "contacts": [
                 {
-                    "email": "abcdefghijklmnopqrstuvwxyzABCD",
-                    "phone": {
-                        "country_code": "abcdefghijklmnopqrstuvwxyzABCD",
-                        "number": "abcdefghijklmnopqrstuvwxyzABCD"
-                    }
+                    "email": "bob.brown@example.com",
+                    "phone": "+44 (0) 123 456 7890"
                 }
             ],
             "postal_code": "abcdefghijklmnopqrstuvwxyzABCD",
             "state": "abcdefghijklmnopqrstuvwxyzABCD",
             "street": "abcdefghijklmnopqrstuvwxyzABCD"
         },
-        "first_name": "abcdefghijklmnopqrstuvwxyzABCD",
-        "last_name": "abcdefghijklmnopqrstuvwxyzABCD"
+        "first_name": "Alice",
+        "last_name": "Brown"
     },
+    "expire_days": "1",
+    "first_name": "Eve",
+    "imo": 9076580,
     "items": [
         {
-            "item_id": "abcdefghijklmnopqrstuvwxyzABCD",
+            "item_id": "3c4b6ca8-ca06-4b91-b179-2cf1307f61b2",
             "name": "abcdefghijklmnopqrstuvwxyzABCD",
             "price": 1.7976931348623157e+308,
             "quantity": "2147483647"
         }
     ],
-    "order_id": "799e6325-9697-4fd9-826b-0d0341101a81"
+    "order_id": "6abb2568-55fe-49d0-948f-247f10d04b67"
 }
 ```
 
@@ -70,32 +70,32 @@ gRPCurl call example:
 grpcurl -d "'{\
     \"customer_info\": {\
         \"address\": {\
-            \"city\": \"abcdefghijklmnopqrstuvwxyzABCD\",
+            \"city\": \"Berlin\",
             \"contacts\": [
                 {\
-                    \"email\": \"abcdefghijklmnopqrstuvwxyzABCD\",
-                    \"phone\": {\
-                        \"country_code\": \"abcdefghijklmnopqrstuvwxyzABCD\",
-                        \"number\": \"abcdefghijklmnopqrstuvwxyzABCD\"
-                    }
+                    \"email\": \"bob.brown@example.com\",
+                    \"phone\": \"+44 (0) 123 456 7890\"
                 }
             ],
             \"postal_code\": \"abcdefghijklmnopqrstuvwxyzABCD\",
             \"state\": \"abcdefghijklmnopqrstuvwxyzABCD\",
             \"street\": \"abcdefghijklmnopqrstuvwxyzABCD\"
         },
-        \"first_name\": \"abcdefghijklmnopqrstuvwxyzABCD\",
-        \"last_name\": \"abcdefghijklmnopqrstuvwxyzABCD\"
+        \"first_name\": \"Alice\",
+        \"last_name\": \"Brown\"
     },
+    \"expire_days\": \"1\",
+    \"first_name\": \"Eve\",
+    \"imo\": 9076580,
     \"items\": [
         {\
-            \"item_id\": \"abcdefghijklmnopqrstuvwxyzABCD\",
+            \"item_id\": \"3c4b6ca8-ca06-4b91-b179-2cf1307f61b2\",
             \"name\": \"abcdefghijklmnopqrstuvwxyzABCD\",
             \"price\": 1.7976931348623157e+308,
             \"quantity\": \"2147483647\"
         }
     ],
-    \"order_id\": \"799e6325-9697-4fd9-826b-0d0341101a81\"
+    \"order_id\": \"6abb2568-55fe-49d0-948f-247f10d04b67\"
 }'" -H "Authorization: Bearer ${TOKEN}" -plaintext ${HOST}:${PORT} ${API_PROTO_SERVICE_VERSION}.OrderService/CreateOrder
 ```
 
@@ -104,35 +104,32 @@ Response example:
 {
     "customer_info": {
         "address": {
-            "city": "abcdefghijklmnopqrstuvwxyzABCD",
+            "city": "Berlin",
             "contacts": [
                 {
-                    "email": "abcdefghijklmnopqrstuvwxyzABCD",
-                    "phone": {
-                        "country_code": "abcdefghijklmnopqrstuvwxyzABCD",
-                        "number": "abcdefghijklmnopqrstuvwxyzABCD"
-                    }
+                    "email": "jane.brown@example.com",
+                    "phone": "+44 (0) 123 456 7890"
                 }
             ],
             "postal_code": "abcdefghijklmnopqrstuvwxyzABCD",
             "state": "abcdefghijklmnopqrstuvwxyzABCD",
             "street": "abcdefghijklmnopqrstuvwxyzABCD"
         },
-        "first_name": "John",
-        "last_name": "Doe"
+        "first_name": "Jane",
+        "last_name": "Brown"
     },
-    "expire_days": 1,
-    "first_name": "Eve",
-    "imo": 9682510,
+    "expire_days": "1",
+    "first_name": "Bob",
+    "imo": 9285517,
     "items": [
         {
-            "item_id": "f6943966-5c43-4ae3-b1f6-1d829a8c35dd",
+            "item_id": "554b9674-71d7-40c5-a40f-c615f0b210bf",
             "name": "abcdefghijklmnopqrstuvwxyzABCD",
             "price": 1.7976931348623157e+308,
             "quantity": "2147483647"
         }
     ],
-    "order_id": "563162cd-f9a5-4a93-a945-4f39412d9855"
+    "order_id": "8899559d-01ee-4e1f-ad5a-f845ece48a3c"
 }
 ```
 
@@ -173,14 +170,17 @@ overrides:
   - service: "*"
     method: "*"
     fields:
-      # uuid is replaced by uuid code here automatically: cc325791-84ef-4269-b492-8515e5a88520
-      ".*_id": "uuid"  # This will match any field ending with "_id"
-      # uuid is replaced by uuid code here automatically: cc325791-84ef-4269-b492-8515e5a88520
+      "^[a-z]+_id$": "uuid"  # This will match any field ending with "_id"
       id: uuid
-      # integer value
+      imo: imo
+      IMONumber: imo
+      first_name: first_name
+      last_name: last_name
       expire_days: 1
-
-  # overriding a specific service
+      city: city
+      country: country
+      email: email
+      phone: phone
   - service: TokensService
     method: Generate
     fields:
@@ -188,7 +188,19 @@ overrides:
 ```
 
 Code ovverides:
-- all "uuid" values are replaced by generated uuid, e.g: cc325791-84ef-4269-b492-8515e5a88520
+- uuid: replaced by generated uuid, e.g: cc325791-84ef-4269-b492-8515e5a88520
+- imo and imoNumber: replaced by generated imo number, e.g: 9682510
+- firstName: replaced by generated first name, e.g: John
+- lastName: replaced by generated last name, e.g: Doe
+- date: replaced by generated date, e.g: 2021-01-01
+- time: replaced by generated time, e.g: 12:00:00
+- dateTime: replaced by generated date time, e.g: 2021-01-01T12:00:00Z
+- email: replaced by generated email, e.g: firstname.lastname@example.com
+- phoneNumber: replaced by generated phone number, e.g: +44 (0) 123 456 7890
+- countryName: replaced by generated country name, e.g: Spain
+- countryCode: replaced by generated country code, e.g: GR
+- city: replaced by generated city, e.g: London
+
 
 # Known issues
 - Uglify has a printout bug with `\{\\`.
