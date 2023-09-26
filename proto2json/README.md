@@ -173,14 +173,17 @@ overrides:
   - service: "*"
     method: "*"
     fields:
-      # uuid is replaced by uuid code here automatically: cc325791-84ef-4269-b492-8515e5a88520
-      ".*_id": "uuid"  # This will match any field ending with "_id"
-      # uuid is replaced by uuid code here automatically: cc325791-84ef-4269-b492-8515e5a88520
+      "^[a-z]+_id$": "uuid"  # This will match any field ending with "_id"
       id: uuid
-      # integer value
+      imo: imo
+      IMONumber: imo
+      first_name: first_name
+      last_name: last_name
       expire_days: 1
-
-  # overriding a specific service
+      city: city
+      country: country
+      email: email
+      phone: phone
   - service: TokensService
     method: Generate
     fields:
@@ -188,7 +191,19 @@ overrides:
 ```
 
 Code ovverides:
-- all "uuid" values are replaced by generated uuid, e.g: cc325791-84ef-4269-b492-8515e5a88520
+- uuid: replaced by generated uuid, e.g: cc325791-84ef-4269-b492-8515e5a88520
+- imo and imoNumber: replaced by generated imo number, e.g: 9682510
+- firstName: replaced by generated first name, e.g: John
+- lastName: replaced by generated last name, e.g: Doe
+- date: replaced by generated date, e.g: 2021-01-01
+- time: replaced by generated time, e.g: 12:00:00
+- dateTime: replaced by generated date time, e.g: 2021-01-01T12:00:00Z
+- email: replaced by generated email, e.g: firstname.lastname@example.com
+- phoneNumber: replaced by generated phone number, e.g: +44 (0) 123 456 7890
+- countryName: replaced by generated country name, e.g: Spain
+- countryCode: replaced by generated country code, e.g: GR
+- city: replaced by generated city, e.g: London
+
 
 # Known issues
 - Uglify has a printout bug with `\{\\`.
