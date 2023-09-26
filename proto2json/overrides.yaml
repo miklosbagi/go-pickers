@@ -6,9 +6,14 @@ overrides:
       "^[a-z]+_id$": "uuid"  # This will match any field ending with "_id"
       id: uuid
       imo: imo
+      IMONumber: imo
       first_name: first_name
       last_name: last_name
       expire_days: 1
+      city: city
+      country: country
+      email: email
+      phone: phone
   - service: TokensService
     method: Generate
     fields:

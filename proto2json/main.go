@@ -81,36 +81,118 @@ func generateSingleFieldValue(field *desc.FieldDescriptor) interface{} {
 }
 
 func customValueGenerator(service, method, fieldName string) (interface{}, bool) {
-
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	// Date generator
+	dateGenerator := func() string {
+		now := time.Now()
+		return now.Format("2006-01-02")
+	}
+
+	// Time generator
+	timeGenerator := func() string {
+		now := time.Now()
+		return now.Format("15:04:05.999")
+	}
+
+	// DateTime generator
+	dateTimeGenerator := func() string {
+		now := time.Now()
+		return now.Format("2006-01-02T15:04:05.999Z07:00")
+	}
+
+	// Phone number generator
+	phoneNumberGenerator := func() string {
+		return "+44 (0) 208 078 7332"
+	}
+
+	// Country name generator
+	countryNameGenerator := func() string {
+		countries := []string{"France", "United Kingdom", "Germany", "Spain"}
+		randomIndex := random.Intn(len(countries))
+		return countries[randomIndex]
+	}
+
+	// Country code generator
+	countryCodeGenerator := func() string {
+		countryCodes := []string{"FR", "UK", "DE", "ES"}
+		randomIndex := random.Intn(len(countryCodes))
+		return countryCodes[randomIndex]
+	}
+
+	// City generator
+	cityGenerator := func() string {
+		cities := []string{"Paris", "London", "Berlin", "Madrid"}
+		randomIndex := random.Intn(len(cities))
+		return cities[randomIndex]
+	}
+
+	// First name generator
+	firstNameGenerator := func() string {
+		firstNames := []string{"John", "Jane", "Alice", "Bob", "Eve"}
+		randomIndex := random.Intn(len(firstNames))
+		return firstNames[randomIndex]
+	}
+
+	// Last name generator
+	lastNameGenerator := func() string {
+		lastNames := []string{"Smith", "Doe", "Johnson", "Brown", "Wilson"}
+		randomIndex := random.Intn(len(lastNames))
+		return lastNames[randomIndex]
+	}
+
+	// Email generator
+	emailGenerator := func() string {
+		firstName := firstNameGenerator()
+		lastName := lastNameGenerator()
+		return fmt.Sprintf("%s.%s@example.com", strings.ToLower(firstName), strings.ToLower(lastName))
+	}
+
+	// imo generator
+	imoGenerator := func() int {
+		min := 9000000
+		max := 9999999
+		return min + random.Intn(max-min+1)
+	}
+
+	// uuid generator
+	uuidGenerator := func() string {
+		return uuid.New().String()
+	}
+
 	// Check for universal rules and service/method specific rules
 	for _, config := range configs {
 		if (config.Service == "*" && config.Method == "*") || (config.Service == service && config.Method == method) {
 			for key, customValue := range config.Fields {
 				matched, _ := regexp.MatchString(key, fieldName)
 				if matched {
-					if customValue == "uuid" {
-						return uuid.New().String(), true
-					} else if customValue == "imo" {
-						// Generate a 7-digit integer starting with 9
-						min := 9000000
-						max := 9999999
-						randomInt := min + random.Intn(max-min+1)
-						return randomInt, true
-					} else if customValue == "first_name" {
-						// Generate a random first name (you can replace this with your data source)
-						firstNames := []string{"John", "Jane", "Alice", "Bob", "Eve"}
-						randomIndex := random.Intn(len(firstNames))
-						return firstNames[randomIndex], true
-					} else if customValue == "last_name" {
-						// Generate a random last name (you can replace this with your data source)
-						lastNames := []string{"Smith", "Doe", "Johnson", "Brown", "Wilson"}
-						randomIndex := random.Intn(len(lastNames))
-						return lastNames[randomIndex], true
-					} else if intValue, err := strconv.Atoi(customValue); err == nil {
-						return intValue, true
-					} else {
-						// Add more type detections here if needed
+					switch customValue {
+					case "uuid":
+						return uuidGenerator(), true
+					case "imo":
+						return imoGenerator(), true
+					case "first_name":
+						return firstNameGenerator(), true
+					case "last_name":
+						return lastNameGenerator(), true
+					case "iso_date":
+						return dateGenerator(), true
+					case "iso_time":
+						return timeGenerator(), true
+					case "iso_datetime":
+						return dateTimeGenerator(), true
+					case "email":
+						return emailGenerator(), true
+					case "phone":
+						return phoneNumberGenerator(), true
+					case "country_name":
+						return countryNameGenerator(), true
+					case "country_code":
+						return countryCodeGenerator(), true
+					case "city":
+						return cityGenerator(), true
+					default:
+						// Add more custom values here as needed
 						return customValue, true
 					}
 				}
