@@ -86,7 +86,7 @@ func customValueGenerator(service, method, fieldName string) (interface{}, bool)
 	// Date generator
 	dateGenerator := func() string {
 		now := time.Now()
-		return now.Format("2006-01-02")
+		return now.Format("2023-01-02")
 	}
 
 	// Time generator
@@ -98,12 +98,12 @@ func customValueGenerator(service, method, fieldName string) (interface{}, bool)
 	// DateTime generator
 	dateTimeGenerator := func() string {
 		now := time.Now()
-		return now.Format("2006-01-02T15:04:05.999Z07:00")
+		return now.Format("2023-01-02T15:04:05.999Z07:00")
 	}
 
 	// Phone number generator
 	phoneNumberGenerator := func() string {
-		return "+44 (0) 208 078 7332"
+		return "+44 (0) 123 456 7890"
 	}
 
 	// Country name generator
