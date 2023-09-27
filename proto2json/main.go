@@ -101,6 +101,11 @@ func customValueGenerator(service, method, fieldName string) (interface{}, bool)
 		return now.Format("2023-01-02T15:04:05.999Z07:00")
 	}
 
+	// RFC3339Nano time generator
+	rfc3339NanoGenerator := func() string {
+		return time.Now().Format(time.RFC3339Nano)
+	}
+
 	// Phone number generator
 	phoneNumberGenerator := func() string {
 		return "+44 (0) 123 456 7890"
@@ -181,6 +186,8 @@ func customValueGenerator(service, method, fieldName string) (interface{}, bool)
 						return timeGenerator(), true
 					case "iso_datetime":
 						return dateTimeGenerator(), true
+					case "rfc3339_nano":
+						return rfc3339NanoGenerator(), true
 					case "email":
 						return emailGenerator(), true
 					case "phone":
