@@ -14,6 +14,8 @@ overrides:
       country: country
       email: email
       phone: phone
+      DataUpdatedAt: rfc3339_nano
+
   - service: TokensService
     method: Generate
     fields:
