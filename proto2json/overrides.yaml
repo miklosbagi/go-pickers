@@ -14,9 +14,23 @@ overrides:
       country: country
       email: email
       phone: phone
-      DataUpdatedAt: rfc3339_nano
 
   - service: TokensService
     method: Generate
     fields:
       code: uuid
+
+  - service: VesselInformationService
+    method: "*"
+    fields:
+      "^[A-z]+_ID$": "uuid"
+      "^[A-z]+ID$": "uuid"
+      DataUpdatedAt: rfc3339_nano
+      DateBuilt: rfc3339_nano
+      DataUpdatedBy: uuid
+      DryDockDueDate: rfc3339_nano
+      KeelLaid: rfc3339_nano
+      SoldDate: rfc3339_nano
+      DeliveryDate: rfc3339_nano
+      SpecialSurveyDate: rfc3339_nano
+      VesselReference: uuid
