@@ -135,27 +135,20 @@ Response example:
 
 ### Configuration
 Proto files can define a few types of fields, therefore proto2json uses detaults so avoid having to set some value to everything. These defaults are:
-- DOUBLE: 1.7976931348623157e+308
+- DOUBLE: return 1.7976931348623157e+308
 - FLOAT: float32(3.402823466e+38)
 - INT64: int64(9223372036854775807)
 - UINT64: "18446744073709551615"
 - INT32: "2147483647"
-- FIXED64: "18446744073709551615"
+- FIXED64": 18446744073709551615"
 - FIXED32: "4294967295"
 - BOOL: "true"
-- STRING": "abcdefghijklmnopqrstuvwxyzABCD"
-- UINT32": "4294967295"
-- ENUM": "ENUM_VALUE_MAX"
+- STRING: "abcdefghijklmnopqrstuvwxyzABCD" // 32 bytes
+- UINT32: "4294967295"
+- ENUM: "ENUM_VALUE_MAX"
 
-Unsupported (returning "NOT_SUPPORTED"):
-- GROUP: "NOT_SUPPORTED"
-- MESSAGE: "NOT_SUPPORTED"
-- BYTES: "NOT_SUPPORTED"
-- SFIXED32: "NOT_SUPPORTED"
-- SFIXED64: "NOT_SUPPORTED"
-- SINT32: "NOT_SUPPORTED"
-- SINT64: "NOT_SUPPORTED"
-		return "NOT_SUPPORTED"
+Unsupported types:
+- GROUP, MESSAGE, BYTES, SFIXED32, SFIXED64 SINT32 SINT64: "UNSUPPORTED_TYPE"
 
 In all other cases:
 - default: "UNKNOWN_TYPE"
@@ -206,19 +199,9 @@ Code ovverides:
 - Uglify has a printout bug with `\{\\`.
 - Proto files with `import` statements are only supported only relative to run path.
 - `repeated type` gets only a single item (e.g: repeated string: "names" should generate {"name":"Steve","name":"George"} as example.
+- mapped values are not handled (e.g: map<string, string> = {"key": "value"}).
 
 # TODO
-- Generators
-  - Firstname
-  - Lastname
-  - Email
-  - Phone Number
-  - Country name
-  - Country code
-  - City
-  - FlagIso2Code
-  - Dates
-  - Times
 - Tests
 - Makefile, packaging, etc
 - Feature
