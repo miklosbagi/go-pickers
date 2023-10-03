@@ -6,6 +6,7 @@ overrides:
       "^[a-z]+_id$": "uuid"  # This will match any field ending with "_id"
       id: uuid
       imo: imo
+      IMO: imo
       IMONumber: imo
       first_name: first_name
       last_name: last_name
