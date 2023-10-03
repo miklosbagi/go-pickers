@@ -200,8 +200,13 @@ Code ovverides:
 - Proto files with `import` statements are only supported only relative to run path.
 - `repeated type` gets only a single item (e.g: repeated string: "names" should generate {"name":"Steve","name":"George"} as example.
 - mapped values are not handled (e.g: map<string, string> = {"key": "value"}).
+- Enum Type is wrong, need to parse enum BlahTypes for example to have a value 0-x, generate as integer.
+- Some int32 fields are generated as "fieldName": { "value": 12345 }, despite they are a stright int32 field, with no map. This breaks the grpc response.
+- SIUnit is not handled properly
+-
 
 # TODO
+- String fields would require to include field name, for better identification for debugging. All abcdefgh.... won't help much.
 - Tests
 - Makefile, packaging, etc
 - Feature
