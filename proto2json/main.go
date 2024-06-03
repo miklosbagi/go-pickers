@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
+	"gopkg.in/yaml.v2"
 
 	"github.com/mb/proto2json/config"
 )
@@ -165,6 +166,14 @@ func customValueGenerator(service, method, fieldName string) (interface{}, bool)
 		return uuid.New().String()
 	}
 
+	// file extension
+	// content type
+	contentTypeGenerator := func() string {
+		contentTypes := []string{"image/jpeg", "image/png", "application/x-binary", "application/x-executable", "text/x-shellscript"}
+		randomIndex := random.Intn(len(contentTypes))
+		return contentTypes[randomIndex]
+	}
+
 	// Check for universal rules and service/method specific rules
 	for _, config := range configs {
 		if (config.Service == "*" && config.Method == "*") || (config.Service == service && config.Method == method) {
@@ -198,6 +207,8 @@ func customValueGenerator(service, method, fieldName string) (interface{}, bool)
 						return countryCodeGenerator(), true
 					case "city":
 						return cityGenerator(), true
+					case "content_type":
+						return contentTypeGenerator(), true
 					default:
 						// Add more custom values here as needed
 						return customValue, true
@@ -376,10 +387,24 @@ func main() {
 						// Escape the opening curly brace to prevent a new line
 						escapedRequestJSON = strings.ReplaceAll(escapedRequestJSON, "{", "{\\")
 
+						// For YAML ouput: Unmarshal JSON to a map
+						var data map[string]interface{}
+						err = json.Unmarshal([]byte(requestOutput), &data)
+						if err != nil {
+							log.Fatalf("error: %v", err)
+						}
+
+						// Step 2: Marshal the map to YAML
+						yamlData, err := yaml.Marshal(&data)
+						if err != nil {
+							log.Fatalf("error: %v", err)
+						}
+
 						// Format the grpcurl command with proper line breaks and indentation
 						grpcurlCommand := fmt.Sprintf("grpcurl -d \"'%s'\" -H \"Authorization: Bearer ${TOKEN}\" -plaintext ${HOST}:${PORT} ${API_PROTO_SERVICE_VERSION}.%s/%s", escapedRequestJSON, service, method)
 
-						printBlock("Request example", requestOutput)
+						printBlock("Request example in JSON", requestOutput)
+						printBlock("Request example in YAML", string(yamlData))
 						printBlock("gRPCurl call example", grpcurlCommand)
 						printBlock("Response example", responseOutput)
 					}
