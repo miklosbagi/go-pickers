@@ -31,8 +31,8 @@ go mod tidy; go build; ./proto2json --proto ./test/test-data/nested proto
 Select a method to generate examples for (e.g., 1/1 or Service/Method):
 ```
 
-```
-Request example:
+JSON Request example:
+```json
 {
     "customer_info": {
         "address": {
@@ -63,6 +63,30 @@ Request example:
     ],
     "order_id": "6abb2568-55fe-49d0-948f-247f10d04b67"
 }
+```
+
+YAML Request Example:
+```yaml
+customer_info:
+  address:
+    city: Berlin
+    contacts:
+      - email: bob.brown@example.com
+        phone: +44 (0) 123 456 7890
+    postal_code: abcdefghijklmnopqrstuvwxyzABCD
+    state: abcdefghijklmnopqrstuvwxyzABCD
+    street: abcdefghijklmnopqrstuvwxyzABCD
+  first_name: Alice
+  last_name: Brown
+expire_days: "1"
+first_name: Eve
+imo: 9076580
+items:
+  - item_id: 3c4b6ca8-ca06-4b91-b179-2cf1307f61b2
+    name: abcdefghijklmnopqrstuvwxyzABCD
+    price: 1.7976931348623157e+308
+    quantity: "2147483647"
+order_id: 6abb2568-55fe-49d0-948f-247f10d04b67
 ```
 
 ```
@@ -99,8 +123,8 @@ grpcurl -d "'{\
 }'" -H "Authorization: Bearer ${TOKEN}" -plaintext ${HOST}:${PORT} ${API_PROTO_SERVICE_VERSION}.OrderService/CreateOrder
 ```
 
-```
-Response example:
+JSON Response example:
+```json
 {
     "customer_info": {
         "address": {
