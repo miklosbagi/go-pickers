@@ -74,7 +74,15 @@ func generateSingleFieldValue(field *desc.FieldDescriptor) interface{} {
 		return "ENUM_VALUE_MAX"
 	case "TYPE_BYTES":
 		return "YmFzZTY0IGVuY29kZWQgcmFuZG9tIGJ5dGVzCg==" // base64 encoded random bytes, with padding.
-	case "TYPE_SFIXED32", "TYPE_SFIXED64", "TYPE_SINT32", "TYPE_SINT64", "TYPE_GROUP", "TYPE_MESSAGE":
+	case "TYPE_SFIXED32":
+		return "2147483647"
+	case "TYPE_SFIXED64":
+		return "9223372036854775807"
+	case "TYPE_SINT32":
+		return "2147483647" // signed 32-bit variable-length integer.
+	case "TYPE_SINT64":
+		return "9223372036854775807"
+	case "TYPE_GROUP", "TYPE_MESSAGE":
 		return "NOT_SUPPORTED"
 	default:
 		return "UNKNOWN_TYPE"
